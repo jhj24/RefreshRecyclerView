@@ -6,6 +6,7 @@ import android.view.View
 import com.jhj.httplibrary.HttpCall
 import com.jhj.httplibrary.callback.base.BaseHttpCallback
 import com.jhj.httplibrary.model.HttpParams
+import com.jhj.refreshrecyclerview.R
 import com.jhj.refreshrecyclerview.base.BaseFragment
 import com.jhj.slimadapter.SlimAdapter
 import com.jhj.slimadapter.callback.ItemViewBind
@@ -47,6 +48,9 @@ abstract class BaseRefreshFragment<T> : BaseFragment() {
         }
 
     }
+
+    override val layoutRes: Int
+        get() = R.layout.fragment_recclerview_refresh
 
 
     private fun httpRequest() {

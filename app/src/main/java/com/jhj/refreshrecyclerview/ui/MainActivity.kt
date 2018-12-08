@@ -15,7 +15,7 @@ class MainActivity : BaseActivity() {
     override val title: String
         get() = "首页"
 
-    private val list = listOf("单纯的下拉刷新", "下拉刷新与Fragment结合")
+    private val list = listOf("单纯的下拉刷新", "下拉刷新与Fragment结合", "只能加载更多")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +34,8 @@ class MainActivity : BaseActivity() {
                     startActivity<RecyclerViewActivity>()
                 } else if (i == 1) {
                     startActivity<FragmentRefreshActivity>()
+                } else if (i == 2) {
+                    startActivity<OnlyLoadMoreActivity>()
                 }
 
             }
