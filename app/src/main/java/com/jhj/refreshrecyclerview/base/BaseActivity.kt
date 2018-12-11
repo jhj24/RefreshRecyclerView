@@ -13,7 +13,8 @@ abstract class BaseActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setSoftInputMode(
-            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN or WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+            WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+                    or WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
         )
 
     }

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/layout_search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="#ebe8e6"
+                android:visibility="gone">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:background="@drawable/shape_search_input">
+
+        <ImageView
+                android:layout_marginLeft="7dp"
+                android:layout_width="15dp"
+                android:layout_height="15dp"
+                android:layout_gravity="center"
+                android:src="@drawable/icon_search"/>
+
+        <EditText
+                android:inputType="textNoSuggestions|text|textCapCharacters"
+                android:id="@+id/et_search"
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:layout_marginLeft="6dp"
+                android:background="@null"
+                android:hint="输入搜索内容"
+                android:imeOptions="actionSearch"
+                android:singleLine="true"
+                android:textColorHint="#909090"
+                android:textSize="14sp"/>
+    </LinearLayout>
+
+    <RelativeLayout
+            android:id="@+id/layout_search_mark"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerInParent="true"
+            android:layout_margin="10dp"
+            android:background="@drawable/shape_search_input">
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true">
+
+            <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/icon_search"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginLeft="8dp"
+                    android:text="点击搜索"
+                    android:textColor="#909090"
+                    android:textSize="14sp"/>
+        </LinearLayout>
+
+    </RelativeLayout>
+</RelativeLayout>
