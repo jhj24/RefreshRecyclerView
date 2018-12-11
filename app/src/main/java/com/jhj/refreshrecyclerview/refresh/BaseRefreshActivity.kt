@@ -58,7 +58,7 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
 
     private var isFirstLoading = true
     private var pageNo = 1
-    private var inputManager: InputMethodManager? = null
+    private lateinit var inputManager: InputMethodManager
     private var isSecondRequest = false
 
     lateinit var adapterLocal: SlimAdapter
@@ -66,6 +66,7 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_recyclerview_refresh)
+        inputManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
         initParam()
         adapterLocal = initAdapter()
 
@@ -80,7 +81,7 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
             layout_search_mark.setOnTouchListener(keyboardState)
             et_search.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    inputManager?.hideSoftInputFromWindow(et_search.windowToken, 0)
+                    inputManager.hideSoftInputFromWindow(et_search.windowToken, 0)
                     when {
                         et_search.text.isNullOrBlank() -> {
                             toast("请输入要搜索的关键字")
@@ -105,18 +106,19 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
                             filterLayoutRes?.let {
                                 val filterView = layoutInflater.inflate(it, null, false)
                                 view.tv_filter_reset.setOnClickListener {
+                                    inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
+                                    alertFragment.dismiss()
                                     resetFilterLayout()
                                     selectorSearchParams.clear()
                                     httpRequest(REQUEST_FIRST)
-                                    alertFragment.dismiss()
-                                    inputManager?.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
                                 }
 
                                 view.tv_filter_search.setOnClickListener {
+                                    inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
+                                    alertFragment.dismiss()
                                     selectorSearchParams = filterParams(filterView)
                                     httpRequest(REQUEST_FIRST)
-                                    alertFragment.dismiss()
-                                    inputManager?.hideSoftInputFromWindow(view.tv_filter_search.windowToken, 0)
+
                                 }
                                 view.layout_filter_item.addView(filterView)
                             }
@@ -247,12 +249,9 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
     private val keyboardState = View.OnTouchListener { _, _ ->
         layout_search_mark.visibility = View.GONE
         et_search.addTextChangedListener(textChangedListener)
-        if (inputManager == null) {
-            inputManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-            inputManager?.showSoftInput(et_search, 0)
-        }
+        inputManager.showSoftInput(et_search, 0)
         recyclerView.setOnTouchListener { _, _ ->
-            inputManager?.hideSoftInputFromWindow(et_search.windowToken, 0)
+            inputManager.hideSoftInputFromWindow(et_search.windowToken, 0)
             if (et_search.text.isNullOrBlank()) {
                 layout_search_mark.visibility = View.VISIBLE
             }
