@@ -40,28 +40,31 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
     abstract val url: String
     abstract val itemLayoutRes: Int
 
+    //分页大小
     open val pageSize = 10
+    //起始页
     open val startPageNum = 1
+    //分割线
     open val hasSplitLine = true
+    //请求参数
     open val httpParams: HttpParams = HttpParams()
-
     //筛选搜索
     open val selectorSearch = true
-    private var selectorSearchParams: HttpParams = HttpParams()
-
     //输入搜索
     open val inputSearch = false
+    //要搜索的key
     open val inputSearchKey = ""
+    //输入框变化就开始搜索
     open val isInputSearchEach = true
+    private var selectorSearchParams: HttpParams = HttpParams()
     private val inputSearchParams: HttpParams = HttpParams()
 
-
-    private var isFirstLoading = true
     private var pageNo = 1
-    private lateinit var inputManager: InputMethodManager
-    private var isSecondRequest = false
+    private var isFirstLoading = true
+    private var filterLayoutRes: Int? = null
 
     lateinit var adapterLocal: SlimAdapter
+    lateinit var inputManager: InputMethodManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -98,37 +101,42 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
         //其他条件筛选
         if (selectorSearch) {
 
-            btn_action_search.setOnClickListener {
-                AlertFragment.Builder(this)
-                    .setDialogStyle(DialogStyleEnum.DIALOG_BOTTOM)
-                    .setLayoutRes(R.layout.layout_recyclerview_refresh_filter, object : OnCustomListener {
-                        override fun onLayout(view: View, alertFragment: AlertFragment) {
-                            filterLayoutRes?.let {
-                                val filterView = layoutInflater.inflate(it, null, false)
-                                view.tv_filter_reset.setOnClickListener {
-                                    inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
-                                    alertFragment.dismiss()
-                                    resetFilterLayout()
-                                    selectorSearchParams.clear()
-                                    httpRequest(REQUEST_FIRST)
-                                }
-
-                                view.tv_filter_search.setOnClickListener {
-                                    inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
-                                    alertFragment.dismiss()
-                                    selectorSearchParams = filterParams(filterView)
-                                    httpRequest(REQUEST_FIRST)
-
-                                }
-                                view.layout_filter_item.addView(filterView)
+            val dialog = AlertFragment.Builder(this)
+                .setDialogStyle(DialogStyleEnum.DIALOG_BOTTOM)
+                .setLayoutRes(R.layout.layout_recyclerview_refresh_filter, object : OnCustomListener {
+                    override fun onLayout(view: View, alertFragment: AlertFragment) {
+                        filterLayoutRes?.let {
+                            val filterView = layoutInflater.inflate(it, null, false)
+                            view.tv_filter_reset.setOnClickListener {
+                                inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
+                                alertFragment.dismiss()
+                                resetFilterLayout()
+                                selectorSearchParams.clear()
+                                httpRequest(REQUEST_FIRST)
                             }
+
+                            view.tv_filter_search.setOnClickListener {
+                                inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
+                                alertFragment.dismiss()
+                                selectorSearchParams = filterParams(filterView)
+                                httpRequest(REQUEST_FIRST)
+
+                            }
+                            view.layout_filter_item.addView(filterView)
                         }
-                    })
-                    .setDialogHeight(800)
-                    .setBackgroundResource(R.drawable.bg_dialog_no_corner)
-                    .setPaddingHorizontal(0)
-                    .setPaddingBottom(0)
-                    .show()
+                    }
+                })
+                .setDialogHeight(800)
+                .setBackgroundResource(R.drawable.bg_dialog_no_corner)
+                .setPaddingHorizontal(0)
+                .setPaddingBottom(0)
+
+
+            btn_action_search.setOnClickListener {
+                if (!dialog.isShow()) {
+                    dialog.show()
+                }
+
             }
 
         }
@@ -265,7 +273,7 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
      */
     private val textChangedListener = object : TextWatcher {
 
-        var s: String? = null
+        var repeatStr: String? = null
 
         override fun afterTextChanged(p0: Editable?) {
 
@@ -274,10 +282,10 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
             }
 
             val searchText: String? = p0?.toString()
-            if (searchText == s) { //避免多次调用
+            if (searchText == repeatStr) { //避免多次调用
                 return
             }
-            s = searchText
+            repeatStr = searchText
             if (searchText.isNullOrBlank()) { //删除完成后自动搜索
                 inputSearchParams.clear()
                 httpRequest(REQUEST_FIRST)
@@ -297,24 +305,24 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
     }
 
 
-    private var filterLayoutRes: Int? = null
-
     /**
      * 设置筛选界面
      */
-    protected fun setFilterLayout(layoutRes: Int) {
+    fun setFilterLayout(layoutRes: Int) {
         this.filterLayoutRes = layoutRes
     }
 
-
-    protected open fun filterParams(filterView: View): HttpParams {
+    /**
+     * 设置请求参数
+     */
+    open fun filterParams(filterView: View): HttpParams {
         return HttpParams()
     }
 
     /**
      * 重置筛选界面
      */
-    protected open fun resetFilterLayout() {
+    open fun resetFilterLayout() {
 
     }
 
