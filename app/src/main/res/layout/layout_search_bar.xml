@@ -4,7 +4,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:background="#ebe8e6"
-                android:visibility="gone">
+>
 
     <LinearLayout
             android:layout_width="match_parent"
@@ -21,8 +21,7 @@
                 android:src="@drawable/icon_search"/>
 
         <EditText
-                android:inputType="textNoSuggestions|text|textCapCharacters"
-                android:id="@+id/et_search"
+                android:id="@+id/et_search_input"
                 android:layout_width="match_parent"
                 android:layout_height="30dp"
                 android:layout_marginLeft="6dp"

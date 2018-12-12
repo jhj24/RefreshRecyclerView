@@ -8,7 +8,6 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
-import android.widget.TextView
 import com.jhj.httplibrary.HttpCall
 import com.jhj.httplibrary.callback.base.BaseHttpCallback
 import com.jhj.httplibrary.model.HttpParams
@@ -80,65 +79,12 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
 
         //输入搜索
         if (inputSearch) {
-            layout_search_bar.visibility = View.VISIBLE
-            layout_search_mark.setOnTouchListener(keyboardState)
-            et_search.setOnEditorActionListener(TextView.OnEditorActionListener { v, actionId, event ->
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    inputManager.hideSoftInputFromWindow(et_search.windowToken, 0)
-                    when {
-                        et_search.text.isNullOrBlank() -> {
-                            toast("请输入要搜索的关键字")
-                            return@OnEditorActionListener false
-                        }
-                        inputSearchKey.isBlank() -> throw NullPointerException("Please set the key corresponding to the content to be searched.")
-                        else -> httpRequest(REQUEST_FIRST)
-                    }
-                }
-                return@OnEditorActionListener false
-            })
+            inputSearch()
         }
 
         //其他条件筛选
         if (selectorSearch) {
-
-            val dialog = AlertFragment.Builder(this)
-                .setDialogStyle(DialogStyleEnum.DIALOG_BOTTOM)
-                .setLayoutRes(R.layout.layout_recyclerview_refresh_filter, object : OnCustomListener {
-                    override fun onLayout(view: View, alertFragment: AlertFragment) {
-                        filterLayoutRes?.let {
-                            val filterView = layoutInflater.inflate(it, null, false)
-                            view.tv_filter_reset.setOnClickListener {
-                                inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
-                                alertFragment.dismiss()
-                                resetFilterLayout()
-                                selectorSearchParams.clear()
-                                httpRequest(REQUEST_FIRST)
-                            }
-
-                            view.tv_filter_search.setOnClickListener {
-                                inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
-                                alertFragment.dismiss()
-                                selectorSearchParams = filterParams(filterView)
-                                httpRequest(REQUEST_FIRST)
-
-                            }
-                            view.layout_filter_item.addView(filterView)
-                        }
-                    }
-                })
-                .setDialogHeight(800)
-                .setBackgroundResource(R.drawable.bg_dialog_no_corner)
-                .setPaddingHorizontal(0)
-                .setPaddingBottom(0)
-
-
-            btn_action_search.setOnClickListener {
-                if (!dialog.isShow()) {
-                    dialog.show()
-                }
-
-            }
-
+            selectorSearch()
         }
 
         //数据刷新加载
@@ -153,9 +99,34 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
         }
         httpRequest(REQUEST_FIRST)
 
+        //重新加载
+        tv_refresh_new.setOnClickListener {
+            layout_refresh_new.visibility = View.GONE
+            smartRefreshLayout.visibility = View.VISIBLE
+            smartRefreshLayout.autoRefresh()
+        }
 
     }
 
+    private fun initAdapter(): SlimAdapter {
+
+        recyclerView.setOnTouchListener { _, _ ->
+            inputManager.hideSoftInputFromWindow(et_search_input.windowToken, 0)
+            if (et_search_input.text.isNullOrBlank()) {
+                layout_search_mark.visibility = View.VISIBLE
+            }
+            return@setOnTouchListener false
+        }
+
+        return SlimAdapter.creator(LinearLayoutManager(this))
+            .setGenericActualType(getTClazz())
+            .register<T>(itemLayoutRes, object : ItemViewBind<T>() {
+                override fun convert(injector: ViewInjector, data: T, position: Int) {
+                    itemViewConvert(injector, data, position)
+                }
+            })
+            .attachTo(recyclerView)
+    }
 
     private fun httpRequest(type: Int) {
 
@@ -175,12 +146,14 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
             .addParams(httpParams)
             .enqueue(object : BaseHttpCallback<RefreshResult<T>>() {
 
+                var isSuccess = false
+
                 override val genericArrayType: Type?
                     get() = type(RefreshResult::class.java, getTClazz())
 
                 override fun onSuccess(data: RefreshResult<T>?, resultType: ResultType) {
+                    isSuccess = true
                     val list = data?.data
-
                     if (isFirstLoading) {
                         adapterLocal.dataList = list
                         smartRefreshLayout.finishRefresh()
@@ -188,7 +161,6 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
                         adapterLocal.addDataList(list)
                         smartRefreshLayout.finishLoadMore()
                     }
-
 
                     if (list != null && list.isNotEmpty()) {
                         pageNo++
@@ -199,10 +171,29 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
                 }
 
                 override fun onFailure(msg: String, errorCode: Int) {
+                    isSuccess = false
                     if (isFirstLoading) {
+                        toast(msg)
                         smartRefreshLayout.finishRefresh(false)
                     } else {
                         smartRefreshLayout.finishLoadMore(false)
+                    }
+                }
+
+                override fun onFinish() {
+                    super.onFinish()
+                    if (adapterLocal.dataList == null || adapterLocal.dataList?.size == 0) {
+                        layout_refresh_new.visibility = View.VISIBLE
+                        smartRefreshLayout.visibility = View.GONE
+                        if (isSuccess) {
+                            tv_refresh_reason.text = "没有数据"
+                        } else {
+                            tv_refresh_reason.text = "查询失败"
+                        }
+
+                    } else {
+                        layout_refresh_new.visibility = View.GONE
+                        smartRefreshLayout.visibility = View.VISIBLE
                     }
                 }
 
@@ -210,15 +201,105 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
     }
 
 
-    private fun initAdapter(): SlimAdapter {
-        return SlimAdapter.creator(LinearLayoutManager(this))
-            .setGenericActualType(getTClazz())
-            .register<T>(itemLayoutRes, object : ItemViewBind<T>() {
-                override fun convert(injector: ViewInjector, data: T, position: Int) {
-                    itemViewConvert(injector, data, position)
+    private fun inputSearch() {
+        layout_search_bar.visibility = View.VISIBLE
+
+        //显示软键盘
+        layout_search_mark.setOnTouchListener { _, _ ->
+            layout_search_mark.visibility = View.GONE
+            inputManager.showSoftInput(et_search_input, 0)
+            return@setOnTouchListener false
+        }
+
+        //输入搜索
+        et_search_input.addTextChangedListener(object : TextWatcher {
+
+            var repeatStr: String? = null
+
+            override fun afterTextChanged(p0: Editable?) {
+
+                if (inputSearchKey.isBlank()) {
+                    throw NullPointerException("Please set the key corresponding to the content to be searched.")
+                }
+
+                val searchText: String? = p0?.toString()
+                if (searchText == repeatStr) { //避免多次调用
+                    return
+                }
+                repeatStr = searchText
+                if (searchText.isNullOrBlank()) { //删除完成后自动搜索
+                    inputSearchParams.clear()
+                    httpRequest(REQUEST_FIRST)
+                } else if (isInputSearchEach) { //是否每次输入后自动搜索
+                    inputSearchParams.clear()
+                    inputSearchParams.put(inputSearchKey, searchText)
+                    httpRequest(REQUEST_FIRST)
+                }
+            }
+
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+
+            }
+        })
+
+        //监听软件盘的搜索按钮
+        et_search_input.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                inputManager.hideSoftInputFromWindow(et_search_input.windowToken, 0)
+                when {
+                    et_search_input.text.isNullOrBlank() -> {
+                        toast("请输入要搜索的关键字")
+                        return@setOnEditorActionListener false
+                    }
+                    inputSearchKey.isBlank() -> throw NullPointerException("Please set the key corresponding to the content to be searched.")
+                    else -> httpRequest(REQUEST_FIRST)
+                }
+            }
+            return@setOnEditorActionListener false
+        }
+    }
+
+
+    private fun selectorSearch() {
+        val dialog = AlertFragment.Builder(this)
+            .setDialogStyle(DialogStyleEnum.DIALOG_BOTTOM)
+            .setLayoutRes(R.layout.layout_recyclerview_refresh_filter, object : OnCustomListener {
+                override fun onLayout(view: View, alertFragment: AlertFragment) {
+                    filterLayoutRes?.let {
+                        val filterView = layoutInflater.inflate(it, null, false)
+                        view.tv_filter_reset.setOnClickListener {
+                            inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
+                            alertFragment.dismiss()
+                            resetFilterLayout()
+                            selectorSearchParams.clear()
+                            httpRequest(REQUEST_FIRST)
+                        }
+
+                        view.tv_filter_search.setOnClickListener {
+                            inputManager.hideSoftInputFromWindow(view.tv_filter_reset.windowToken, 0)
+                            alertFragment.dismiss()
+                            selectorSearchParams = filterParams(filterView)
+                            httpRequest(REQUEST_FIRST)
+
+                        }
+                        view.layout_filter_item.addView(filterView)
+                    }
                 }
             })
-            .attachTo(recyclerView)
+            .setDialogHeight(800)
+            .setBackgroundResource(R.drawable.bg_dialog_no_corner)
+            .setPaddingHorizontal(0)
+            .setPaddingBottom(0)
+
+        btn_action_search.setOnClickListener {
+            if (!dialog.isShow()) {
+                dialog.show()
+            }
+
+        }
     }
 
 
@@ -253,58 +334,6 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
         }
     }
 
-
-    private val keyboardState = View.OnTouchListener { _, _ ->
-        layout_search_mark.visibility = View.GONE
-        et_search.addTextChangedListener(textChangedListener)
-        inputManager.showSoftInput(et_search, 0)
-        recyclerView.setOnTouchListener { _, _ ->
-            inputManager.hideSoftInputFromWindow(et_search.windowToken, 0)
-            if (et_search.text.isNullOrBlank()) {
-                layout_search_mark.visibility = View.VISIBLE
-            }
-            return@setOnTouchListener false
-        }
-        return@OnTouchListener false
-    }
-
-    /**
-     * 输入搜索
-     */
-    private val textChangedListener = object : TextWatcher {
-
-        var repeatStr: String? = null
-
-        override fun afterTextChanged(p0: Editable?) {
-
-            if (inputSearchKey.isBlank()) {
-                throw NullPointerException("Please set the key corresponding to the content to be searched.")
-            }
-
-            val searchText: String? = p0?.toString()
-            if (searchText == repeatStr) { //避免多次调用
-                return
-            }
-            repeatStr = searchText
-            if (searchText.isNullOrBlank()) { //删除完成后自动搜索
-                inputSearchParams.clear()
-                httpRequest(REQUEST_FIRST)
-            } else if (isInputSearchEach) { //是否每次输入后自动搜索
-                inputSearchParams.clear()
-                inputSearchParams.put(inputSearchKey, searchText)
-                httpRequest(REQUEST_FIRST)
-            }
-        }
-
-        override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        }
-
-        override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-
-        }
-    }
-
-
     /**
      * 设置筛选界面
      */
@@ -325,7 +354,6 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
     open fun resetFilterLayout() {
 
     }
-
 
     open fun initParam() {}
 
