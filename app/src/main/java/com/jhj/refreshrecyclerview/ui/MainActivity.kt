@@ -24,7 +24,7 @@ class MainActivity : BaseActivity() {
 
 
         SlimAdapter.creator(LinearLayoutManager(this))
-            .register<String>(R.layout.list_item_white, object : ItemViewBind<String>() {
+            .register<String>(R.layout.list_item_white, object : ItemViewBind<String> {
                 override fun convert(p0: ViewInjector, p1: String?, p2: Int) {
                     p0.text(R.id.textView, p1)
                 }

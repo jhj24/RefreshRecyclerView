@@ -94,7 +94,7 @@ abstract class BaseRefreshFragment<T> : BaseFragment() {
     private fun initAdapter(): SlimAdapter {
         return SlimAdapter.creator(LinearLayoutManager(activity))
             .setGenericActualType(getTClazz())
-            .register<T>(itemLayoutRes, object : ItemViewBind<T>() {
+            .register<T>(itemLayoutRes, object : ItemViewBind<T> {
                 override fun convert(injector: ViewInjector, data: T, position: Int) {
                     itemViewConvert(injector, data, position)
                 }

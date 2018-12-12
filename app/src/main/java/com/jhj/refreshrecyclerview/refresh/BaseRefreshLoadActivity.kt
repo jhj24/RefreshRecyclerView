@@ -27,7 +27,7 @@ import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 
-abstract class BaseRefreshActivity<T> : BaseActivity() {
+abstract class BaseRefreshLoadActivity<T> : BaseActivity() {
 
 
     companion object {
@@ -88,16 +88,11 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
 
         //数据刷新加载
         httpRequest(REQUEST_FIRST)
-        smartRefreshLayout.autoLoadMore()//自动加载
         smartRefreshLayout.setEnableLoadMoreWhenContentNotFull(true)
+        smartRefreshLayout.setEnableLoadMore(false)
         smartRefreshLayout.setOnRefreshListener {
             httpRequest(REQUEST_FIRST)
         }
-
-        smartRefreshLayout.setOnLoadMoreListener {
-            httpRequest(REQUEST_OTHER)
-        }
-
 
         //重新加载
         tv_refresh_new.setOnClickListener {
@@ -117,13 +112,16 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
             }
             return@setOnTouchListener false
         }
-
         return SlimAdapter.creator(LinearLayoutManager(this))
             .setGenericActualType(getTClazz())
             .register<T>(itemLayoutRes) { injector, data, position ->
                 itemViewConvert(injector, data, position)
             }
             .attachTo(recyclerView)
+            .setOnLoadMoreListener {
+                httpRequest(REQUEST_OTHER)
+            }
+
     }
 
     private fun httpRequest(type: Int) {
@@ -157,13 +155,12 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
                         smartRefreshLayout.finishRefresh()
                     } else {
                         adapterLocal.addDataList(list)
-                        smartRefreshLayout.finishLoadMore()
                     }
 
                     if (list != null && list.isNotEmpty()) {
                         pageNo++
                     } else {
-                        smartRefreshLayout.setNoMoreData(true)
+                        adapterLocal.loadMoreEnd()
                     }
 
                 }
@@ -174,7 +171,9 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
                         toast(msg)
                         smartRefreshLayout.finishRefresh(false)
                     } else {
-                        smartRefreshLayout.finishLoadMore(false)
+                        adapterLocal.loadMoreFail {
+                            httpRequest(REQUEST_OTHER)
+                        }
                     }
                 }
 
@@ -262,6 +261,7 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
         }
     }
 
+
     /**
      * 过滤搜索
      */
@@ -300,7 +300,6 @@ abstract class BaseRefreshActivity<T> : BaseActivity() {
             if (!dialog.isShow()) {
                 dialog.show()
             }
-
         }
     }
 
