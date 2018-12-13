@@ -47,7 +47,7 @@ abstract class BaseRefreshLoadActivity<T> : BaseActivity() {
     //请求参数
     open val httpParams: HttpParams = HttpParams()
     //筛选搜索
-    open val filterSearch = true
+    open val filterSearch = false
     //输入搜索
     open val inputSearch = false
     //要搜索的key
@@ -78,12 +78,18 @@ abstract class BaseRefreshLoadActivity<T> : BaseActivity() {
 
         //输入搜索
         if (inputSearch) {
+            layout_search_bar.visibility = View.VISIBLE
             inputSearch()
+        } else {
+            layout_search_bar.visibility = View.GONE
         }
 
         //其他条件筛选
         if (filterSearch) {
+            layout_action_search.visibility = View.VISIBLE
             filterSearch()
+        } else {
+            layout_action_search.visibility = View.GONE
         }
 
         //数据刷新加载
@@ -201,7 +207,6 @@ abstract class BaseRefreshLoadActivity<T> : BaseActivity() {
      * 输入搜索
      */
     private fun inputSearch() {
-        layout_search_bar.visibility = View.VISIBLE
 
         //显示软键盘
         layout_search_mark.setOnTouchListener { _, _ ->

@@ -6,12 +6,12 @@ import com.jhj.httplibrary.model.HttpParams
 import com.jhj.refreshrecyclerview.R
 import com.jhj.refreshrecyclerview.bean.ApplyBean
 import com.jhj.refreshrecyclerview.net.HttpConfig
-import com.jhj.refreshrecyclerview.refresh.BaseRefreshActivity
+import com.jhj.refreshrecyclerview.refresh.BaseRefreshLoadActivity
 import com.jhj.slimadapter.holder.ViewInjector
 import kotlinx.android.synthetic.main.layout_filter_text.view.*
 import org.jetbrains.anko.toast
 
-class RecyclerViewActivity : BaseRefreshActivity<ApplyBean>() {
+class RecyclerViewActivity : BaseRefreshLoadActivity<ApplyBean>() {
 
     override val url: String
         get() = HttpConfig.a
@@ -25,10 +25,12 @@ class RecyclerViewActivity : BaseRefreshActivity<ApplyBean>() {
     override fun initParam() {
         super.initParam()
         httpParams.put("memberId", "754")
-
     }
 
     override val inputSearch: Boolean
+        get() = true
+
+    override val filterSearch: Boolean
         get() = true
 
     override val inputSearchKey: String

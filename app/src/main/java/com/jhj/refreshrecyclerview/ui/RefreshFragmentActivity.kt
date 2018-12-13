@@ -8,7 +8,7 @@ import com.jhj.refreshrecyclerview.R
 import com.jhj.refreshrecyclerview.base.BaseFragmentActivity
 import kotlinx.android.synthetic.main.activity_fragment_recyclerview_refresh.*
 
-class FragmentRefreshActivity : BaseFragmentActivity() {
+class RefreshFragmentActivity : BaseFragmentActivity() {
 
     override val title: String
         get() = "标题"
@@ -57,7 +57,6 @@ class FragmentRefreshActivity : BaseFragmentActivity() {
 
     fun getFragment(): RefreshFragment {
         val fragment = RefreshFragment()
-
 
         return fragment
     }

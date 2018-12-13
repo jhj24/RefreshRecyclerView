@@ -3,8 +3,7 @@
                 android:id="@+id/layout_search_bar"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:background="#ebe8e6"
->
+                android:background="#ebe8e6">
 
     <LinearLayout
             android:layout_width="match_parent"

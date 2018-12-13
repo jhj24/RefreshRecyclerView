@@ -1,20 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
               android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
 
-    <com.scwang.smartrefresh.layout.SmartRefreshLayout
-            android:id="@+id/smartRefreshLayout"
+    <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
-                android:id="@+id/recyclerView"
+        <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-    </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+                android:orientation="vertical"
+                android:layout_height="match_parent">
+
+            <include layout="@layout/layout_search_bar"/>
+
+            <com.scwang.smartrefresh.layout.SmartRefreshLayout
+                    android:id="@+id/smartRefreshLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <android.support.v7.widget.RecyclerView
+                        android:id="@+id/recyclerView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"/>
+            </com.scwang.smartrefresh.layout.SmartRefreshLayout>
+
+            <RelativeLayout
+                    android:id="@+id/layout_refresh_new"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                <TextView
+                        android:layout_centerHorizontal="true"
+                        android:text="没有数据"
+                        android:textColor="#777777"
+                        android:id="@+id/tv_refresh_reason"
+                        android:layout_width="wrap_content"
+                        android:layout_marginBottom="25dp"
+                        android:layout_above="@+id/tv_refresh_new"
+                        android:layout_height="wrap_content"/>
+
+                <TextView
+                        android:paddingLeft="20dp"
+                        android:paddingRight="20dp"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp"
+                        android:layout_centerInParent="true"
+                        android:background="@drawable/selector_refresh_btn"
+                        android:text="刷新"
+                        android:id="@+id/tv_refresh_new"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <RelativeLayout
+                android:id="@+id/layout_action_search"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btn_action_search"
+                    android:clickable="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerInParent="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_margin="16dp"
+                    android:src="@drawable/ic_search_filter"
+                    app:backgroundTint="#ff9b48"
+                    app:layout_anchorGravity="bottom|right"
+                    app:pressedTranslationZ="12dp"
+                    app:rippleColor="#ffbf89"
+                    android:focusable="true"/>
+
+        </RelativeLayout>
+
+    </FrameLayout>
 
 
 </LinearLayout>

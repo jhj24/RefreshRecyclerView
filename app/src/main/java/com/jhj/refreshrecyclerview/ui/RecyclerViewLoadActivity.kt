@@ -10,13 +10,13 @@ import com.jhj.slimadapter.holder.ViewInjector
 import kotlinx.android.synthetic.main.activity_recyclerview_refresh.*
 import org.jetbrains.anko.toast
 
-class OnlyLoadMoreActivity : BaseRefreshActivity<ApplyBean>() {
+class RecyclerViewLoadActivity : BaseRefreshActivity<ApplyBean>() {
 
     override val url: String
         get() = HttpConfig.a
 
     override val title: String
-        get() = "只能加载更多"
+        get() = "下拉刷新"
 
     override val itemLayoutRes: Int
         get() = R.layout.list_item_white
@@ -29,7 +29,7 @@ class OnlyLoadMoreActivity : BaseRefreshActivity<ApplyBean>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        smartRefreshLayout.setEnableRefresh(false)
+        //smartRefreshLayout.setEnableRefresh(false)
         initRightText("提交", View.OnClickListener {
             toast("提交")
         })
